@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
+require('dotenv').config();
 
-const mongoURL = "mongodb://localhost:27017/BookReview?"
+const mongoURL = process.env.MONGO_URL
 
 // arrow function for the connection setup to the mongodb using mongoose
 const connectToNongo = () => {
