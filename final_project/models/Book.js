@@ -15,11 +15,12 @@ const bookSchema = new mongoose.Schema({
         required: true
     },
     reviews: {
-        type: Object,
-        default: {}
+        type: Map,
+        of: String,
+        default: new Map()
     }
 });
 
-const Book = mongoose.model('Book', bookSchema);
+const Book = mongoose.model('books', bookSchema);
 
 module.exports = Book;

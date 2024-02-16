@@ -1,35 +1,36 @@
 const express = require('express');
 const router = express.Router();
 const jwt = require("jsonwebtoken");
+const User = require('../models/User');
+require('dotenv').config();
 
-const JWT_SECRETE = "this is the very secrete string";
+const JWT_SECRET = process.env.JWT_SECRET;
+
 const fetchuser = (req, res, next) => {
-    //get the user from jwt token and append id to request object
     const token = req.header('auth-token');
     if (!token) {
-        res.statue(401).send({ error: " please authenticate using a valid token" });
+        return res.status(401).send({ error: "Please authenticate using a valid token" });
     }
     try {
-        const data = jwt.verify(token, JWT_SECRETE);
+        const data = jwt.verify(token, JWT_SECRET);
         req.user = data.user;
         next();
     } catch (error) {
-        // console.error(error.message);
-        res.statue(401).send({ error: " please authenticate using a valid token" });
+        console.error(error.message);
+        res.status(401).send({ error: "Please authenticate using a valid token" });
     }
 }
 
-// router 3===========================================================================================
+// Route to get user information
 router.post('/getuser', fetchuser, async (req, res) => {
-
     try {
         const userId = req.user.id;
         const user = await User.findById(userId).select("-password");
         res.send(user);
     } catch (error) {
         console.error(error.message);
-        res.status(500).send("please authenticate using a valid user");
+        res.status(500).send("Internal server error");
     }
 });
 
-module.exports = router 
+module.exports = router;

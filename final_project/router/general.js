@@ -1,27 +1,17 @@
 const express = require('express');
 const User = require('../models/User.js');
-const book = require('../models/Book.js');
-const router = express.Router();
-const { body, validationResult } = require('express-validator');
+const Book = require('../models/Book.js');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const public_users = express.Router();
 require('dotenv').config();
 
 
-const JWT_SECRETE = process.env.JWT_SECRET;
+const jwt_secret = process.env.JWT_SECRET;
 
 
-public_users.post('/register', [
-  body('email', 'Enter a valid email type ').isEmail(),
-  body('password', 'Enter a valid password type ').isLength({ min: 6 })
-], async (req, res) => {
+public_users.post('/register', async (req, res) => {
   let success = false;
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(404).json({ success, errors: errors.array() });
-  }
-
   try {
     let user = await User.findOne({ email: req.body.email });
     if (user) {
@@ -41,7 +31,7 @@ public_users.post('/register', [
         id: user.id
       }
     }
-    const authtoken = jwt.sign(data, JWT_SECRETE);
+    const authtoken = jwt.sign(data, jwt_secret);
 
     success = true;
     res.json({ success, authtoken });
@@ -53,33 +43,86 @@ public_users.post('/register', [
 })
 
 // Get the book list available in the shop
-public_users.get('/', function (req, res) {
-  //Write your code here
-  return res.status(300).json({ message: "Yet to be implemented" });
+public_users.get('/', async (req, res) => {
+  try {
+    const books = await Book.find();
+    res.json(books);
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send("Some internal server error occurred");
+  }
 });
 
 // Get book details based on ISBN
-public_users.get('/isbn/:isbn', function (req, res) {
-  //Write your code here
-  return res.status(300).json({ message: "Yet to be implemented" });
+public_users.get('/isbn/:isbn', async function (req, res) {
+  try {
+    const isbn = req.params.isbn;
+    const books = await Book.find({ isbn: isbn });
+
+    if (books.length === 0) {
+      return res.status(404).json({ message: "Book not found" });
+    }
+
+    res.json(books[0]);
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send("Some internal server error occurred");
+  }
 });
 
+
 // Get book details based on author
-public_users.get('/author/:author', function (req, res) {
+public_users.get('/author/:author', async function (req, res) {
   //Write your code here
-  return res.status(300).json({ message: "Yet to be implemented" });
+  try {
+    const author = req.params.author;
+    const books = await Book.find({ author: author });
+
+    if (books.length === 0) {
+      return res.status(404).json({ message: "Book not found" });
+    }
+
+    res.json(books[0]);
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send("Some internal server error occurred");
+  }
 });
 
 // Get all books based on title
-public_users.get('/title/:title', function (req, res) {
+public_users.get('/title/:title', async function (req, res) {
   //Write your code here
-  return res.status(300).json({ message: "Yet to be implemented" });
+  try {
+    const title = req.params.title;
+    const books = await Book.find({ title: title });
+
+    if (books.length === 0) {
+      return res.status(404).json({ message: "Book not found" });
+    }
+
+    res.json(books[0]);
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send("Some internal server error occurred");
+  }
 });
 
 //  Get book review
-public_users.get('/review/:isbn', function (req, res) {
+public_users.get('/review/:isbn', async function (req, res) {
   //Write your code here
-  return res.status(300).json({ message: "Yet to be implemented" });
+  try {
+    const isbn = req.params.isbn;
+    const books = await Book.find({ isbn: isbn });
+
+    if (books.length === 0) {
+      return res.status(404).json({ message: "Book not found" });
+    }
+
+    res.json(books[0].reviews);
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send("Some internal server error occurred");
+  }
 });
 
 module.exports.general = public_users;
